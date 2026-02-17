@@ -12,7 +12,6 @@ from typing import Any, Tuple
 from unittest.mock import patch
 
 from scanner.dotnet import DotnetScanner
-from scanner.base_scanner import Artifact
 
 
 class TestDotnetScanner(unittest.TestCase):
@@ -70,9 +69,13 @@ class TestDotnetScanner(unittest.TestCase):
 
             scanner = DotnetScanner()
             artifacts = scanner.scan(self.temp_dir)
-            self.assertIn(Artifact(path=bin_dir, type=".NET"), artifacts)
-            self.assertIn(Artifact(path=obj_dir, type=".NET"), artifacts)
+            paths = {a.path for a in artifacts}
+            self.assertIn(bin_dir, paths)
+            self.assertIn(obj_dir, paths)
             self.assertEqual(len(artifacts), 2)
+            for a in artifacts:
+                self.assertEqual(a.type, ".NET")
+                self.assertEqual(a.size_bytes, 0)
 
     def test_ignores_nonexistent_paths_from_msbuild(self) -> None:
         """Test that scan ignores paths that do not exist on disk."""
