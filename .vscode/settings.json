@@ -1,0 +1,21 @@
+{
+  "editor.formatOnSave": true,
+  "github.copilot.enable": {
+    "*": false,
+    "python": true
+  },
+  "python.analysis.aiCodeActions": {
+    "generateDocstring": true,
+    "implementAbstractClasses": true
+  },
+  "python.analysis.typeCheckingMode": "standard",
+  "python.defaultInterpreterPath": "~/.venv/bin/python",
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.unusedImports": "explicit",
+    },
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  }
+}

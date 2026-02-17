@@ -1,0 +1,16 @@
+[project]
+name = "src-cleaner"
+version = "0.1.0"
+description = "A Python tool to detect and remove build artifacts for Node.js and .NET projects."
+license = {text = "MIT"}
+authors = ["Jani Ojanen <jajuojan@gmail.com>"]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "black>=26.1.0",
+    "mypy>=1.19.1",
+    "pylint>=4.0.4",
+]

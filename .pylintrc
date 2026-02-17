@@ -1,0 +1,6 @@
+[MAIN]
+max-line-length=88
+
+[MESSAGES CONTROL]
+disable=too-few-public-methods, fixme, no-self-use
+enable=typecheck
