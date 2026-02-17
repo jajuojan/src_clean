@@ -19,11 +19,8 @@ def main() -> None:
         default="dry-run",
         help=(
             "Action to take: dry-run (list), "
-            "script (output rm commands), delete (remove files)"
+            "script (print rm commands to stdout), delete (remove files)"
         ),
-    )
-    parser.add_argument(
-        "--output", default="clean.sh", help="Output file for script mode"
     )
 
     args = parser.parse_args()
@@ -52,7 +49,7 @@ def main() -> None:
             print(f"  {artifact}")
 
     elif args.mode == "script":
-        script_remover = ScriptRemover(args.output)
+        script_remover = ScriptRemover()
         script_remover.remove(sorted_artifacts)
 
     elif args.mode == "delete":

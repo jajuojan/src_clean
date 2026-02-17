@@ -9,7 +9,7 @@ A Python program that detects and helps in removing build artifacts for Node.js 
     - **.NET**: Detects `bin` and `obj` folders. It uses the `dotnet` SDK to identify exact output paths when available, falling back to standard names if necessary.
 - **Multiple Deletion Modes**:
     - **Dry Run**: List all detected artifacts without deleting them.
-    - **Script Generation**: Generate a shell script (`clean.sh`) containing `rm -rf` commands for manual execution.
+    - **Script Generation**: Print a portable shell script to stdout containing `rm -rf` commands for manual execution (redirect to a file if desired).
     - **Direct Deletion**: Remove artifacts directly using Python.
 
 ## Usage
@@ -20,8 +20,11 @@ You can run the script using Python:
 # List all detected artifacts (dry-run)
 python main.py .
 
-# Generate a cleanup script
-python main.py . --mode script --output my_clean.sh
+# Generate a cleanup script to a file
+python main.py . --mode script > clean.sh
+
+# Or pipe directly to a shell (use with caution)
+python main.py . --mode script | sh
 
 # Delete artifacts directly
 python main.py . --mode delete
@@ -31,7 +34,6 @@ python main.py . --mode delete
 
 - `path`: (Optional) The directory to scan. Defaults to the current directory (`.`).
 - `--mode`: The action to take. Options: `dry-run` (default), `script`, `delete`.
-- `--output`: The name of the output file when using `script` mode. Defaults to `clean.sh`.
 
 ## Requirements
 
