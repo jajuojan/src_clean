@@ -22,8 +22,12 @@ class TestDirectRemover(unittest.TestCase):
         artifacts = [self.file1, self.dir1]
         with patch('builtins.input', side_effect=['y', 'y']):
             with patch('builtins.print'):  # Silence output during tests
-                self.remover.remove(artifacts)
+                result = self.remover.remove(artifacts)
         
+        self.assertTrue(result.success)
+        self.assertEqual(len(result.removed), 2)
+        self.assertIn(self.file1, result.removed)
+        self.assertIn(self.dir1, result.removed)
         self.assertFalse(self.file1.exists())
         self.assertFalse(self.dir1.exists())
 
@@ -31,8 +35,11 @@ class TestDirectRemover(unittest.TestCase):
         artifacts = [self.file1, self.dir1]
         with patch('builtins.input', side_effect=['n', 'n']):
             with patch('builtins.print'):
-                self.remover.remove(artifacts)
+                result = self.remover.remove(artifacts)
         
+        self.assertTrue(result.success)
+        self.assertEqual(len(result.removed), 0)
+        self.assertEqual(len(result.skipped), 2)
         self.assertTrue(self.file1.exists())
         self.assertTrue(self.dir1.exists())
 
@@ -40,8 +47,13 @@ class TestDirectRemover(unittest.TestCase):
         artifacts = [self.file1, self.dir1]
         with patch('builtins.input', side_effect=['y', 'n']):
             with patch('builtins.print'):
-                self.remover.remove(artifacts)
+                result = self.remover.remove(artifacts)
         
+        self.assertTrue(result.success)
+        self.assertEqual(len(result.removed), 1)
+        self.assertEqual(len(result.skipped), 1)
+        self.assertIn(self.file1, result.removed)
+        self.assertIn(self.dir1, result.skipped)
         self.assertFalse(self.file1.exists())
         self.assertTrue(self.dir1.exists())
 
@@ -49,11 +61,24 @@ class TestDirectRemover(unittest.TestCase):
         artifacts = [self.file1, self.dir1]
         with patch('builtins.input', side_effect=EOFError):
             with patch('builtins.print'):
-                self.remover.remove(artifacts)
+                result = self.remover.remove(artifacts)
         
+        self.assertFalse(result.success)
         # Should stop after first attempt and not delete anything
         self.assertTrue(self.file1.exists())
         self.assertTrue(self.dir1.exists())
+
+    def test_remove_error(self):
+        artifacts = [self.file1]
+        # Simulate error by patching unlink to raise OSError
+        with patch('builtins.input', side_effect=['y']):
+            with patch('pathlib.Path.unlink', side_effect=OSError("Permission denied")):
+                with patch('builtins.print'):
+                    result = self.remover.remove(artifacts)
+        
+        self.assertFalse(result.success)
+        self.assertIn(self.file1, result.failed)
+        self.assertTrue(self.file1.exists())
 
 if __name__ == '__main__':
     unittest.main()

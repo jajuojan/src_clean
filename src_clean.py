@@ -3,6 +3,7 @@ src-clean: A tool to detect and remove build artifacts.
 """
 
 import argparse
+import sys
 from pathlib import Path
 from typing import Set
 
@@ -55,7 +56,9 @@ def main() -> None:
 
     elif args.mode == "delete":
         direct_remover = DirectRemover()
-        direct_remover.remove(sorted_artifacts)
+        result = direct_remover.remove(sorted_artifacts)
+        if not result.success:
+            sys.exit(1)
 
 
 if __name__ == "__main__":
