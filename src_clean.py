@@ -24,6 +24,13 @@ def main() -> None:
             "script (print rm commands to stdout), delete (remove files)"
         ),
     )
+    parser.add_argument(
+        "--scanners",
+        nargs="+",
+        choices=["node", "dotnet", "all"],
+        default=["all"],
+        help="Scanners to use (default: all)",
+    )
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -36,10 +43,19 @@ def main() -> None:
         print(f"Path does not exist: {root_path}")
         return
 
-    print(f"Scanning {root_path}...")
+    scanner_map = {
+        "node": NodeScanner,
+        "dotnet": DotnetScanner,
+    }
 
-    scanners = [NodeScanner(), DotnetScanner()]
+    selected_scanners = args.scanners
+    if "all" in selected_scanners:
+        selected_scanners = list(scanner_map.keys())
+
+    scanners = [scanner_map[s]() for s in selected_scanners]
     artifacts: Set[Artifact] = set()
+
+    print(f"Scanning {root_path}...")
     for scanner in scanners:
         artifacts.update(scanner.scan(root_path))
 

@@ -34,6 +34,7 @@ python src_clean.py . --mode delete
 
 - `path`: The directory to scan.
 - `--mode`: The action to take. Options: `dry-run` (default), `script`, `delete`.
+- `--scanners`: Scanners to use. Options: `node`, `dotnet`, `all`. Default: `all`. Example: `--scanners=node`.
 
 ## Requirements
 
