@@ -1,64 +1,9 @@
 ﻿import argparse
 import os
 import shutil
-import subprocess
 from pathlib import Path
-from typing import List, Set
-
-
-class ArtifactScanner:
-    def __init__(self, root_path: Path):
-        self.root_path = root_path
-        self.artifacts: Set[Path] = set()
-
-    def scan(self):
-        for root, dirs, files in os.walk(self.root_path):
-            root_path = Path(root)
-            
-            # Node.js
-            if "package.json" in files:
-                node_modules = root_path / "node_modules"
-                if node_modules.exists() and node_modules.is_dir():
-                    self.artifacts.add(node_modules)
-            
-            # .NET
-            for file in files:
-                if file.endswith((".csproj", ".fsproj", ".vbproj")):
-                    self._scan_dotnet(root_path / file)
-
-    def _scan_dotnet(self, project_file: Path):
-        try:
-            # Get BaseOutputPath
-            result = subprocess.run(
-                ["dotnet", "msbuild", str(project_file), "-getProperty:BaseOutputPath"],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            base_output = result.stdout.strip()
-            if base_output:
-                path = (project_file.parent / base_output).resolve()
-                if path.exists() and path.is_dir():
-                    self.artifacts.add(path)
-
-            # Get BaseIntermediateOutputPath
-            result = subprocess.run(
-                ["dotnet", "msbuild", str(project_file), "-getProperty:BaseIntermediateOutputPath"],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            base_intermediate = result.stdout.strip()
-            if base_intermediate:
-                path = (project_file.parent / base_intermediate).resolve()
-                if path.exists() and path.is_dir():
-                    self.artifacts.add(path)
-        except subprocess.CalledProcessError:
-            # Fallback to common names if dotnet fails
-            for name in ["bin", "obj"]:
-                path = project_file.parent / name
-                if path.exists() and path.is_dir():
-                    self.artifacts.add(path)
+from typing import Set
+from scanner import NodeScanner, DotnetScanner
 
 
 def main():
@@ -76,14 +21,17 @@ def main():
         return
 
     print(f"Scanning {root_path}...")
-    scanner = ArtifactScanner(root_path)
-    scanner.scan()
+    
+    scanners = [NodeScanner(), DotnetScanner()]
+    artifacts: Set[Path] = set()
+    for scanner in scanners:
+        artifacts.update(scanner.scan(root_path))
 
-    if not scanner.artifacts:
+    if not artifacts:
         print("No artifacts found.")
         return
 
-    sorted_artifacts = sorted(list(scanner.artifacts))
+    sorted_artifacts = sorted(list(artifacts))
 
     if args.mode == "dry-run":
         print("\nFound artifacts:")
@@ -93,8 +41,7 @@ def main():
     elif args.mode == "script":
         with open(args.output, "w") as f:
             if os.name == 'nt':
-                 # For Windows, maybe both? The prompt said 'rm' command.
-                 # I'll provide standard rm which works in git bash / wsl / etc.
+                 # For Windows, provide standard rm which works in git bash / wsl / etc.
                  f.write("#!/bin/sh\n")
             else:
                  f.write("#!/bin/sh\n")
