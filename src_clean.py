@@ -1,12 +1,13 @@
 ﻿"""
-Artifact Cleaner: A tool to detect and remove build artifacts.
+src-clean: A tool to detect and remove build artifacts.
 """
 
 import argparse
 from pathlib import Path
 from typing import Set
-from scanner import NodeScanner, DotnetScanner
+
 from remover import DirectRemover, ScriptRemover
+from scanner import DotnetScanner, NodeScanner
 
 
 def main() -> None:
